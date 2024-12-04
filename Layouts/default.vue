@@ -28,7 +28,7 @@
             <a class="nav-link disabled" aria-disabled="true">Disabled</a>
           </li>
         </ul>
-        <button class="btn btn-outline-success me-2" type="submit">SignUp</button>
+        <button @click="$router.push('/singup')" class="btn btn-outline-success me-2" type="submit">SignUp</button>
         <button type="button" class="btn btn-outline-info">SingIn</button>
       </div>
     </div>
@@ -36,6 +36,11 @@
   <div class="container">
   <slot />
   </div>
+  <footer class="bg-dark text-white p-3 mt-3">
+    <div class="container text-center">
+      <p class="lead"> &copy;Dominic</p>
+    </div>
+  </footer>
 </template>
 
 <script setup lang="ts">
