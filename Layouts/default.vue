@@ -28,21 +28,40 @@
             <a class="nav-link disabled" aria-disabled="true">Disabled</a>
           </li>
         </ul>
-        <button @click="$router.push('/singup')" class="btn btn-outline-success me-2" type="submit">SignUp</button>
-        <button type="button" class="btn btn-outline-info">SingIn</button>
+        <template v-if="!authStore.authData">
+          <button @click="$router.push('/signup')" class="btn btn-outline-success me-2" type="submit">SignUp</button>
+          <button @click="$router.push('/signin')" type="button" class="btn btn-outline-info">SignIn</button>
+        </template>
+        <template v-else>
+          <NuxtLink to="/" class="navbar-link">Profile</NuxtLink>
+          <button @click="logout" type="button" class="btn btn-outline-danger">Quit</button>
+        </template>
       </div>
     </div>
   </nav>
   <div class="container">
-  <slot />
+    <slot />
   </div>
   <footer class="bg-dark text-white p-3 mt-3">
     <div class="container text-center">
-      <p class="lead"> &copy;Dominic</p>
+      <p class="lead">&copy;Dominic</p>
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from "#imports";
+import { useRouter } from "vue-router";
 
+const authStore = useAuthStore();
+const router = useRouter();
+
+const logout = async () => {
+  try {
+    await authStore.signout();
+    await router.push('/');
+  } catch (error) {
+    console.error('Error during sign out:', error);
+  }
+};
 </script>

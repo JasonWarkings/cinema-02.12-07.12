@@ -11,6 +11,7 @@ const gender = ref(0);
 const genderStore = useGenderStore();
 const authStore = useAuthStore();
 const router = useRouter();
+const errorMessage = ref('');
 
 const register = async () => {
   try {
@@ -22,7 +23,9 @@ const register = async () => {
       gender_id: gender.value,
     });
     router.push('/');
-  } catch (e) {}
+  } catch (e) {
+    er
+  }
 };
 
 </script>
