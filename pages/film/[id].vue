@@ -1,177 +1,92 @@
+<script setup lang="ts">
+import {useReviewStore} from "~/stores/review";
+import {useAuthStore} from "#imports";
+
+const filmStore = useFilmStore();
+const route = useRoute();
+const reviewStore = useReviewStore();
+const authStore = useAuthStore()
+filmStore.fetchfilmById(route.params.id);
+reviewStore.fetchReviewsByFilmId(route.params.id);
+const message = ref('');
+const sendReview =async () => {
+  await reviewStore.addReview({
+    film_id: route.params.id,
+    message: message.value,
+  });
+  alert('Your review has been added successfully!');
+}
+</script>
+
 <template>
-  <div class="row">
-    <div class="col-md-4"></div>
-    <div class="col-md-4">
-
-
-      <div class="profile-form">
-        <h2>Edit My Profile</h2>
-        <form @submit.prevent="submitForm">
-          <div class="form-group">
-            <label for="fio">FIO</label>
-            <input type="text" id="fio" v-model="form.fio" required>
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" v-model="form.email" required>
-          </div>
-          <div class="form-group">
-            <label for="birthday">Birthday</label>
-            <input type="date" id="birthday" v-model="form.birthday" required>
-          </div>
-          <div class="form-group">
-            <label for="gender">Gender</label>
-            <select id="gender" v-model="form.gender" required>
-              <option value="">Select</option>
-              <option v-for="gender in genderStore.genders" :key="gender.id" :value="gender.id">
-                {{ gender.name }}
-              </option>
-            </select>
-          </div>
-          <button type="submit" class="save-button" :disabled="isLoading">
-            Save
-            <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
-          </button>
-          <div class="alert alert-danger" role="alert" v-if="errorMessage">
-            {{ errorMessage }}
-          </div>
-        </form>
+  <template v-if="filmStore.film">
+    <div class="row">
+      <div class="col-md-2">
+        <h2>{{ filmStore.film.ratingAvg }} </h2>
       </div>
+      <div class="col-md-8">
+        <iframe width="750" height="450" :src="filmStore.film.link_video"></iframe>
+      </div>
+      <div v-if="authStore.authData" class="col-md-2">
+        <rating-stars :film-id="filmStore.film.id"/>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <h1>{{ filmStore.film.name }}</h1>
+      </div>
+      <div class="col-vd-8 fs-4">
+        {{ filmStore.film.duration }} min. |
+        {{ filmStore.film.country_name }}
+        {{ filmStore.film.year_of_issue }} |
+        {{ filmStore.film.age }}+
+        {{ filmStore.film.careated_at }} |
+        <template
+            v-for="category in filmStore.film.categories"
+            :key="category.id">
+          {{category.name}},
+        </template>
+      </div>
+      <div class="col-md-4 fs-4 text-end">
+        <a href="#">Kinopoisk</a>
+      </div>
+    </div>
+    <div v-if="authStore.authData" class="row-mt-5 fs-4">
+      <div class="col-md-10">
+        <label for="exampleFormControlTextarea1" class="form-label">Add review</label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="message"></textarea>
+      </div>
+      <div class="col-md-2 d-flex flex-column-reverse">
+        <button class="btn btn-outline-success" @click="sendReview">Send</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 fs-4 mt-2">Reviews</div>
+      <div
+          v-for="review in reviewStore.reviews"
+          :key="review.id"
+          class="row">
+        <div class="col">
+          <div class="row">
+            <div class="col-md-10 fw-bold fs-5">{{ review.user.fio }}</div>
+            <div class="col-md-2 text-end">{{ review.created_at }}</div>
+          </div>
+          <div class="row">
+            <div class="col fs-4">{{ review.message }}</div>
+          </div>
+        </div>
+        <div class="col-12">
+          <hr class="border border-success border-2 opacity-50">
+        </div>
+      </div>
+    </div>
+  </template>
+  <div v-else class="d-flex justify-content-center mt-4">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useAuthStore } from '~/stores/auth';
-import { useGenderStore } from '~/stores/gender';
-import { useRouter } from 'vue-router';
-import { api } from '~/api/index.js';
-
-const authStore = useAuthStore();
-const genderStore = useGenderStore();
-const router = useRouter();
-const errorMessage = ref('');
-const isLoading = ref(false);
-
-const form = ref({
-  fio: '',
-  email: '',
-  birthday: '',
-  gender: ''
-});
-
-const loadUserData = async () => {
-  try {
-    isLoading.value = true;
-    const res = await api.get(`/users/${authStore.authData.id}`, {
-      headers: {
-        Authorization: `Bearer ${authStore.authData.token}`,
-      },
-    });
-    form.value = {
-      fio: res.data.fio,
-      email: res.data.email,
-      birthday: res.data.birthday,
-      gender: res.data.gender.id,
-    };
-  } catch (error) {
-    console.error('Failed to load user data:', error);
-    errorMessage.value = 'Failed to load user data';
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const submitForm = async () => {
-  try {
-    isLoading.value = true;
-    await api.put(`/users`, {
-    fio: form.value.fio,
-        email: form.value.email,
-        birthday: form.value.birthday,
-        gender_id: form.value.gender,
-  }, {
-    headers: {
-      Authorization: `Bearer ${authStore.authData.token}`,
-    },
-  });
-  alert('Profile updated successfully!');
-  router.push('/profile');
-} catch (error) {
-  console.error('Failed to update profile:', error);
-  errorMessage.value = error.response?.data?.message || 'Failed to update profile';
-} finally {
-  isLoading.value = false;
-}
-};
-
-onMounted(() => {
-  loadUserData();
-  genderStore.fetchgenders();
-});
-</script>
-
 <style scoped>
-body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  margin: 0;
-  background-color: #f4f4f4;
-}
 
-.container {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 400px;
-}
-
-.container h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
-.form-group select {
-  height: 40px;
-}
-
-.save-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #153353;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.save-button:hover {
-  background-color: #0056b3;
-}
 </style>
