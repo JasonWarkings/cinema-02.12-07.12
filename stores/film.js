@@ -4,6 +4,7 @@ import {api} from "~/api/index.js";
 
 export const useFilmStore = defineStore('film', () => {
     const films = ref([]);
+    const film = ref([null]);
     const isLoading = ref(false);
     const params = ref({
         page: 1,
@@ -40,10 +41,10 @@ export const useFilmStore = defineStore('film', () => {
         return Math.ceil(totalFilms.value / params.value.size);
     })
 
-
-    watch(currentPage.value, (value) => {
-        params.value.page = value;
-    })
+    const fetchfilmById = async (id) => {
+        const res = await api.get('/films/' + id);
+        film.value = res.data;
+    }
     fetchFilms();
     return {
         films,
@@ -54,5 +55,7 @@ export const useFilmStore = defineStore('film', () => {
         fetchFilms,
         countPage,
         currentPage,
+        fetchfilmById,
+        film
     }
 });

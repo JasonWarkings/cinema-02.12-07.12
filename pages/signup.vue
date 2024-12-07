@@ -23,8 +23,8 @@ const register = async () => {
       gender_id: gender.value,
     });
     router.push('/');
-  } catch (e) {
-    er
+  } catch (e: any) {
+    errorMessage.value = e.message;
   }
 };
 

@@ -71,7 +71,7 @@ const goto = (page: number) => {
     <div class="col" v-for="film in filmStore.films" :key="film.id">
       <div class="card h-100">
         <img v-if="film.link_img" :src="film.link_img" class="card-img-top" alt="...">
-        <img v-else="film.link_img" src="..."
+        <img v-else="film.link_img" src="https://avatars.mds.yandex.net/i?id=d50ba0ecfb546b29d4198120a0f7cab98b776214-13219041-images-thumbs&n=13"
              class="card-img-top" alt="...">
         <div class="card-body">
           <h5 class="card-title"> {{ film.name }}</h5>
@@ -83,7 +83,7 @@ const goto = (page: number) => {
             </template>
           </p>
         </div>
-        <button type="button" class="btn btn-success">Add</button>
+        <button @click="$router.push('/film/' + film.id)" type="button" class="btn btn-success">Add</button>
       </div>
     </div>
   </div>

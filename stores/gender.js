@@ -10,5 +10,6 @@ export const useGenderStore = defineStore('gender', () => {
 
     return{
         genders,
+        fetchgenders,
     };
 })
